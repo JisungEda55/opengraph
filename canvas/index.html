@@ -1,250 +1,184 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>디지털 캔버스 (1200x630)</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f6f9;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 20px;
-            margin: 0;
-            min-height: 100vh;
-        }
-        h1 {
-            margin: 0 0 20px;
-            color: #2c3e50;
-            font-size: 24px;
-        }
-        .toolbar {
-            background: #ffffff;
-            padding: 12px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .tool-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        button {
-            padding: 8px 14px;
-            border: 1px solid #d1d5db;
-            background: #ffffff;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            transition: all 0.2s;
-        }
-        button:hover {
-            background: #f3f4f6;
-            border-color: #9ca3af;
-        }
-        button.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #2563eb;
-        }
-        canvas {
-            background: #ffffff;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-            cursor: crosshair;
-            border-radius: 6px;
-            max-width: 100%;
-            height: auto;
-        }
-        input[type="color"] {
-            width: 36px;
-            height: 36px;
-            border: none;
-            cursor: pointer;
-            background: none;
-            padding: 0;
-        }
-        input[type="range"] {
-            width: 120px;
-        }
-        .size-display {
-            min-width: 35px;
-            text-align: right;
-            color: #6b7280;
-            font-size: 14px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG Image Maker - ShinJisung Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+    .og-container {
+      width: 1200px;
+      height: 630px;
+      box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+    }
+    .grain {
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 80px 80px;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-zinc-950 text-white min-h-screen pb-12">
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <h1 class="text-4xl font-bold mb-2 flex items-center gap-3">
+      OG Image Maker <span class="text-amber-400">✦</span>
+    </h1>
+    <p class="text-zinc-400">실시간으로 예쁜 Open Graph &amp; Twitter Card 이미지를 만들어 보세요</p>
 
-    <h1>🎨 디지털 캔버스</h1>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-10">
+      <!-- 편집 패널 -->
+      <div class="space-y-8">
+        <div>
+          <label class="block text-sm text-zinc-400 mb-2">템플릿 선택</label>
+          <div class="flex gap-3 flex-wrap">
+            <button onclick="switchTemplate(0)" class="template-btn active px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl">Glass Modern</button>
+            <button onclick="switchTemplate(1)" class="template-btn px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl">Bold Typography</button>
+            <button onclick="switchTemplate(2)" class="template-btn px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl">Warm Organic</button>
+          </div>
+        </div>
 
-    <div class="toolbar">
-        <div class="tool-group">
-            <button id="brushBtn" class="active">✏️ 브러시</button>
-            <button id="eraserBtn">🧹 지우개</button>
-        </div>
-        <div class="tool-group">
-            <label for="colorPicker">색상:</label>
-            <input type="color" id="colorPicker" value="#000000">
-        </div>
-        <div class="tool-group">
-            <label for="brushSize">크기:</label>
-            <input type="range" id="brushSize" min="1" max="50" value="5">
-            <span id="sizeDisplay" class="size-display">5px</span>
-        </div>
-        <div class="tool-group">
-            <button id="clearBtn">🗑️ 초기화</button>
-            <button id="saveBtn">💾 PNG 저장</button>
-        </div>
-    </div>
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm text-zinc-400 mb-2">메인 제목</label>
+            <input id="title" type="text" value="지금까지 본 가장 아름다운 OG 이미지" 
+                   oninput="updatePreview()" class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 text-xl focus:outline-none focus:border-amber-400">
+          </div>
+          
+          <div>
+            <label class="block text-sm text-zinc-400 mb-2">설명</label>
+            <textarea id="desc" oninput="updatePreview()" rows="3" 
+                      class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-5 py-4 focus:outline-none focus:border-amber-400">2026년 트렌드를 반영한 OG 이미지를 브라우저에서 바로 제작하세요. 한글도 완벽 지원합니다.</textarea>
+          </div>
 
-    <canvas id="drawingCanvas" width="1200" height="630"></canvas>
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm text-zinc-400 mb-2">사이트 이름</label>
+              <input id="site" type="text" value="shinjisung.com" oninput="updatePreview()" 
+                     class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4">
+            </div>
+            <div>
+              <label class="block text-sm text-zinc-400 mb-2">배경 이미지 URL (선택)</label>
+              <input id="bgurl" type="text" placeholder="https://picsum.photos/id/1015/1200/630" oninput="updatePreview()" 
+                     class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4">
+            </div>
+          </div>
+        </div>
 
-    <script>
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
+        <button onclick="downloadImage()" 
+                class="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-black font-semibold py-5 rounded-3xl text-xl transition-all active:scale-95">
+          📥 고해상도 PNG 다운로드 (1200×630)
+        </button>
+      </div>
+
+      <!-- 미리보기 -->
+      <div>
+        <div class="mb-3 flex items-center justify-between">
+          <p class="text-sm text-zinc-400">실시간 미리보기 (1200×630)</p>
+          <button onclick="updatePreview()" class="text-xs px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl">새로고침</button>
+        </div>
         
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-        let brushSize = 5;
-        let brushColor = '#000000';
-        let isEraser = false;
-
-        const brushBtn = document.getElementById('brushBtn');
-        const eraserBtn = document.getElementById('eraserBtn');
-        const colorPicker = document.getElementById('colorPicker');
-        const brushSizeSlider = document.getElementById('brushSize');
-        const sizeDisplay = document.getElementById('sizeDisplay');
-        const clearBtn = document.getElementById('clearBtn');
-        const saveBtn = document.getElementById('saveBtn');
-
-        // 캔버스 배경 하얗게 초기화
-        function initCanvas() {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-        }
-        initCanvas();
-
-        function startDrawing(e) {
-            isDrawing = true;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+        <div class="flex justify-center bg-zinc-900 p-8 rounded-3xl overflow-auto">
+          <div id="preview" class="og-container bg-zinc-900 relative overflow-hidden rounded-2xl flex flex-col justify-between">
+            <!-- 배경 -->
+            <div id="background" class="absolute inset-0 bg-cover bg-center transition-all"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/90"></div>
             
-            lastX = (e.clientX - rect.left) * scaleX;
-            lastY = (e.clientY - rect.top) * scaleY;
-            draw(e);
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-            ctx.beginPath();
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+            <!-- 콘텐츠 -->
+            <div class="relative p-16 flex flex-col h-full">
+              <div id="site-name" class="text-amber-400 text-xl font-medium tracking-widest">SHINJISUNG.COM</div>
+              
+              <div class="mt-auto">
+                <h1 id="preview-title" class="text-5xl leading-tight font-bold tracking-tighter text-white">
+                  지금까지 본 가장 아름다운 OG 이미지
+                </h1>
+                <p id="preview-desc" class="mt-6 text-lg text-zinc-200 line-clamp-3">
+                  2026년 트렌드를 반영한 OG 이미지를 브라우저에서 바로 제작하세요.
+                </p>
+              </div>
+            </div>
             
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
+            <!-- 하단 바 -->
+            <div class="relative px-16 py-8 border-t border-white/10 flex items-center justify-between text-sm">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-white/20 backdrop-blur-md rounded-2xl"></div>
+                <div>
+                  <div class="font-medium">ShinJisung</div>
+                  <div class="text-zinc-400 text-xs">May 2026</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-amber-400 font-mono text-xl">01</div>
+              </div>
+            </div>
+            
+            <div class="grain absolute inset-0 pointer-events-none opacity-30"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            ctx.lineWidth = brushSize;
-            ctx.strokeStyle = isEraser ? '#ffffff' : brushColor;
+  <script>
+    let currentTemplate = 0;
 
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            ctx.stroke();
+    function switchTemplate(n) {
+      currentTemplate = n;
+      document.querySelectorAll('.template-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === n);
+        btn.classList.toggle('bg-amber-400', i === n);
+        btn.classList.toggle('text-black', i === n);
+      });
+      updatePreview();
+    }
 
-            lastX = x;
-            lastY = y;
-        }
+    function updatePreview() {
+      const title = document.getElementById('title').value;
+      const desc = document.getElementById('desc').value;
+      const site = document.getElementById('site').value;
+      const bgurl = document.getElementById('bgurl').value;
 
-        brushBtn.addEventListener('click', () => {
-            isEraser = false;
-            brushBtn.classList.add('active');
-            eraserBtn.classList.remove('active');
-            canvas.style.cursor = 'crosshair';
+      document.getElementById('preview-title').textContent = title || "제목을 입력하세요";
+      document.getElementById('preview-desc').textContent = desc || "";
+      document.getElementById('site-name').textContent = site.toUpperCase() || "YOUR-SITE.COM";
+
+      const bgDiv = document.getElementById('background');
+      if (bgurl) {
+        bgDiv.style.backgroundImage = `url('${bgurl}')`;
+      } else {
+        bgDiv.style.backgroundImage = currentTemplate === 2 
+          ? 'linear-gradient(135deg, #4f46e5, #ec4899)' 
+          : 'url("https://picsum.photos/id/1015/1200/630")';
+      }
+    }
+
+    async function downloadImage() {
+      const preview = document.getElementById('preview');
+      const loading = alert("이미지를 생성 중입니다... 잠시만 기다려주세요.");
+      
+      try {
+        const canvas = await html2canvas(preview, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null
         });
+        
+        const link = document.createElement('a');
+        link.download = `og-image-${new Date().toISOString().slice(0,10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch(e) {
+        alert("다운로드 중 오류가 발생했습니다.");
+      }
+    }
 
-        eraserBtn.addEventListener('click', () => {
-            isEraser = true;
-            eraserBtn.classList.add('active');
-            brushBtn.classList.remove('active');
-            canvas.style.cursor = 'cell';
-        });
-
-        colorPicker.addEventListener('input', (e) => {
-            brushColor = e.target.value;
-        });
-
-        brushSizeSlider.addEventListener('input', (e) => {
-            brushSize = parseInt(e.target.value);
-            sizeDisplay.textContent = `${brushSize}px`;
-        });
-
-        clearBtn.addEventListener('click', () => {
-            if (confirm('캔버스를 완전히 지우시겠습니까?')) {
-                initCanvas();
-            }
-        });
-
-        saveBtn.addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = 'canvas-art.png';
-            link.href = canvas.toDataURL('image/png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-
-        // 마우스 이벤트
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseleave', stopDrawing);
-
-        // 터치 이벤트 지원 (모바일/태블릿)
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('mousedown', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            canvas.dispatchEvent(new MouseEvent('mouseup'));
-        });
-
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('mousemove', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }, { passive: false });
-    </script>
+    // 초기화
+    window.onload = () => {
+      updatePreview();
+    };
+  </script>
 </body>
 </html>
