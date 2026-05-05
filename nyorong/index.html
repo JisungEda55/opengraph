@@ -3,59 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>뇨롱이 바로가기</title>
     
-    <!-- Open Graph Meta Tags (링크 미리보기 핵심) -->
+    <!-- OG 태그 (SNS 공유 시 예쁘게 보이게) -->
     <meta property="og:title" content="뇨룡이 생일방송! 🎉" />
     <meta property="og:description" content="지금 바로 함께 축하해 주기!" />
     <meta property="og:image" content="https://i.ibb.co/s9NFC7cT/IMG-8845.jpg" />
     <meta property="og:url" content="https://chzzk.naver.com/c65ca7335aaeb2ca0c985078223017c0" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="뇨롱이 치지직 바로가기" />
-    <meta property="og:locale" content="ko_KR" />
 
-    <!-- Twitter / Telegram 최적화 -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="뇨룡이 생일방송! 🎉" />
-    <meta name="twitter:description" content="지금 바로 함께 축하해 주기!" />
-    <meta name="twitter:image" content="https://i.ibb.co/s9NFC7cT/IMG-8845.jpg" />
-
-    <!-- 기본 메타 -->
-    <meta name="description" content="뇨롱이 치지직 바로가기" />
-    
     <script>
-    function redirectToChzzk() {
-        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        var appOpened = false;
+    function openChzzk() {
+        const channelId = "c65ca7335aaeb2ca0c985078223017c0"; // 당신의 채널 ID
+        const webUrl = `https://chzzk.naver.com/${channelId}`;
         
-        function isAppInstalled(url, fallbackUrl) {
-            var iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = url;
-            document.body.appendChild(iframe);
-            setTimeout(function() {
-                document.body.removeChild(iframe);
+        let appOpened = false;
+        
+        // 1. Android 시도
+        if (/android/i.test(navigator.userAgent)) {
+            // navergameapp://chzzk/채널ID 형태 추천
+            window.location.href = `navergameapp://chzzk/${channelId}`;
+            
+            // fallback
+            setTimeout(() => {
                 if (!appOpened) {
-                    window.location.href = fallbackUrl;
+                    window.location.href = webUrl;
                 }
             }, 1500);
-        }
-        
-        if (/android/i.test(userAgent)) {
-            isAppInstalled('chzzk://c65ca7335aaeb2ca0c985078223017c0', 'https://play.google.com/store/apps/details?id=com.nhn.android.chzzk');
-        } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            isAppInstalled('chzzk://c68c3e1788d86ff11740edcd7040a8e8', 'https://apps.apple.com/kr/app/%EC%B9%98%EC%A7%80%EC%A7%81-chzzk/id1508716734');
-            window.addEventListener('pagehide', function() {
+        } 
+        // 2. iOS 시도
+        else if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            window.location.href = `navergameapp://chzzk/${channelId}`;
+            
+            // iOS는 pagehide 이벤트로 앱 열림 감지 가능
+            const visibilityHandler = () => {
                 appOpened = true;
-            });
-        } else {
-            window.location.href = 'https://chzzk.naver.com/c65ca7335aaeb2ca0c985078223017c0';
+            };
+            document.addEventListener('visibilitychange', visibilityHandler);
+            window.addEventListener('pagehide', visibilityHandler);
+            
+            setTimeout(() => {
+                document.removeEventListener('visibilitychange', visibilityHandler);
+                if (!appOpened) {
+                    window.location.href = webUrl;
+                }
+            }, 2000);
+        } 
+        // 3. PC/기타 → 웹으로 바로 이동
+        else {
+            window.location.href = webUrl;
         }
     }
-</script>
+
+    // 페이지 로드되면 자동 실행
+    window.onload = openChzzk;
+    </script>
 </head>
-<body>
-    <!-- 내용 없음 (빈 페이지) -->
+<body style="margin:0; padding:0; background:#000; color:#fff; text-align:center; font-family:sans-serif;">
+    <p style="padding-top:50px;">뇨롱이 생일방송으로 이동 중입니다... 🎂</p>
+    <p>앱이 설치되어 있지 않으면 웹으로 연결됩니다.</p>
 </body>
 </html>
